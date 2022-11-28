@@ -4,10 +4,8 @@ import java.util.PriorityQueue;
 
 public class QuoridorBoardModel {
 
-	final int COST = 0;
-	final int FROM = 1;
-	final int DONE = 2;
 	
+	final int DONE = 1;
 	
 	final int PASSABLE = 0;
 	final int BLOCKED = 1;
@@ -27,8 +25,10 @@ public class QuoridorBoardModel {
 		
 		Location playerLocation = getPlayerLocation(playerNum);
 		
+		// TODO Might be extra memory
+		int[][] completionTable = new int[gameBoard.length][gameBoard.length];
 		
-		int[][][] graph = new int[this.boardSize][this.boardSize][3];
+		
 		PriorityQueue<Location> pQueue= new PriorityQueue<Location>();
 		
 		
@@ -39,6 +39,7 @@ public class QuoridorBoardModel {
 		{
 		
 			Location currentLocation = pQueue.remove();
+			completionTable[currentLocation.first][currentLocation.second] = DONE;
 			
 			//-------------------------
 			// Short Circuit Conditions
@@ -70,25 +71,41 @@ public class QuoridorBoardModel {
 			// Checks left
 			if (validBoardIndex(currentLocation.second - 1) && gameBoard[currentLocation.first][currentLocation.second - 1] == PASSABLE)
 			{
-				pQueue.add(new Location(currentLocation.first, currentLocation.second - 2, currentLocation.cost + 1));
+				// If next not already dequeued
+				if(gameBoard[currentLocation.first][currentLocation.second - 2] != DONE)
+				{
+					pQueue.add(new Location(currentLocation.first, currentLocation.second - 2, currentLocation.cost + 1));
+				}
 			}
 			
 			// Checks right
 			if (validBoardIndex(currentLocation.second + 1) && gameBoard[currentLocation.first][currentLocation.second + 1] == PASSABLE)
 			{
-				pQueue.add(new Location(currentLocation.first, currentLocation.second + 2, currentLocation.cost + 1));
+				// If next not already dequeued
+				if(gameBoard[currentLocation.first][currentLocation.second + 2] != DONE)
+				{
+					pQueue.add(new Location(currentLocation.first, currentLocation.second + 2, currentLocation.cost + 1));
+				}
 			}
 			
 			// Checks up
 			if (validBoardIndex(currentLocation.first - 1) && gameBoard[currentLocation.first - 1][currentLocation.second] == PASSABLE)
 			{
-				pQueue.add(new Location(currentLocation.first - 2, currentLocation.second, currentLocation.cost + 1));
+				// If next not already dequeued
+				if(gameBoard[currentLocation.first][currentLocation.first - 2] != DONE)
+				{
+					pQueue.add(new Location(currentLocation.first - 2, currentLocation.second, currentLocation.cost + 1));
+				}
 			}
 			
 			// Checks down
 			if (validBoardIndex(currentLocation.first + 1) && gameBoard[currentLocation.first + 1][currentLocation.second] == PASSABLE)
 			{
-				pQueue.add(new Location(currentLocation.first + 2, currentLocation.second, currentLocation.cost + 1));
+				// If next not already dequeued
+				if(gameBoard[currentLocation.first][currentLocation.first + 2] != DONE)
+				{
+					pQueue.add(new Location(currentLocation.first + 2, currentLocation.second, currentLocation.cost + 1));
+				}
 			}
 			
 			
