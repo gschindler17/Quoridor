@@ -1,9 +1,15 @@
 package qPackage;
 
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.util.PriorityQueue;
 
 public class QuoridorBoardModel {
 
+	/** A helper object to handle observer pattern behavior */
+	protected PropertyChangeSupport pcs = new PropertyChangeSupport(this);
+	
+	
 	
 	final int DONE = 1;
 	
@@ -12,11 +18,38 @@ public class QuoridorBoardModel {
 	
 	
 	
-	int boardSize;
+	private int boardSize;
 	
 	int[][] gameBoard; 
 	
+	public QuoridorBoardModel () {
+		
+		// Tells the view a model was instantiated
+		pcs.firePropertyChange("instantiation", null, null);
+		
+		// Sets the gameBoard to a size 3 square
+		setBoardSize(5);
+		return;
+		
+	}
 	
+	
+	
+	
+	
+	
+	
+	
+	public void setBoardSize(int _boardSize)
+	{
+		if (_boardSize > 0)
+		{
+			boardSize = _boardSize;
+		}
+		
+		// If there are n spaces, then there are n-1 barriers too
+		gameBoard = new int[(boardSize * 2) - 1][(boardSize * 2) - 1];
+	}
 	
 	
 	
@@ -171,5 +204,22 @@ public class QuoridorBoardModel {
 		}
 	}
 	
+	
+	
+	/**
+	 * Don't forget to create a way for Observers to subscribe to this
+	 * @param listener
+	 */
+    public void addPropertyChangeListener(PropertyChangeListener listener) {
+        this.pcs.addPropertyChangeListener(listener);
+    }
+
+    /**
+     * And Observers probably want to be able to unsubscribe as well
+     * @param listener
+     */
+    public void removePropertyChangeListener(PropertyChangeListener listener) {
+        this.pcs.removePropertyChangeListener(listener);
+    }
 	
 }
