@@ -50,7 +50,8 @@ public class QuoridorBoardModel {
 		gameBoard = new int[(boardSize * 2) - 1][(boardSize * 2) - 1];
 	}
 	
-
+	// TODO Check if first and second valid indices
+	// TODO Check if previously played
 	public void completeMove(int first, int second, int playerNum)
 	{
 		Location currentLocation = getPlayerLocation(playerNum);
