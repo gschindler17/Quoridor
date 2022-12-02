@@ -2,6 +2,7 @@ package qPackage;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.util.Collections;
 import java.util.PriorityQueue;
 
 public class QuoridorBoardModel {
@@ -38,8 +39,6 @@ public class QuoridorBoardModel {
 	
 	
 	
-	
-	
 	public void setBoardSize(int _boardSize)
 	{
 		if (_boardSize > 0)
@@ -51,12 +50,112 @@ public class QuoridorBoardModel {
 		gameBoard = new int[(boardSize * 2) - 1][(boardSize * 2) - 1];
 	}
 	
+
+	public void completeMove(int first, int second, int playerNum)
+	{
+		Location currentLocation = getPlayerLocation(playerNum);
+		Location otherPlayerLocation = getOtherPlayerLocation(playerNum);
+		
+		
+		if (otherPlayerLocation.first == first && otherPlayerLocation.second == second)
+		{
+			throw new IllegalArgumentException("You can't play on top of the other player's location!!");
+		}
+		if (currentLocation.first == first && currentLocation.second == second)
+		{
+			throw new IllegalArgumentException("You can't play on top yourself!!");
+		}
+		
+		if (first % 2 == 1 || second % 2 == 1)
+		{
+			gameBoard[first][second] = BLOCKED;
+			
+			if (shortestPathToWin(playerNum) == -1 || shortestPathToWin(getOtherPlayerNum(playerNum)) == -1)
+			{
+				gameBoard[first][second] = PASSABLE;
+				throw new IllegalArgumentException("There wouldn't be a path to win then!!");
+			}
+			else
+			{
+				return;
+			}
+		}
+		
+		
+		
+		if (shortestPathToPlayer(first, second, playerNum) == 1)
+		{
+			setPlayerLocation(first, second, playerNum);
+		}
+		else
+		{
+			throw new IllegalArgumentException("You can't move that far!");
+		}
+		
+		
+		
+	}
 	
 	
-	public int shortestPathToEnd(int playerNum) {
+	
+	public int shortestPathToWin(int playerNum)
+	{
+		int smallestCost = Integer.MAX_VALUE;
+		
+		
+		for (int col = 0; col < gameBoard[0].length; col++)
+		{
+			int pathLength = shortestPathToPlayer(winningRow(playerNum), col, playerNum);
+			
+			if (pathLength == -1)
+			{
+				continue;
+			}
+			if (pathLength < smallestCost)
+			{
+				smallestCost = pathLength;
+			}
+		}
+		
+		
+		if (smallestCost == Integer.MAX_VALUE)
+		{
+			return -1;
+		}
+		else
+		{
+			return smallestCost;
+		}
+		
+		
+		
+	}
+	
+	
+	
+	public int winningRow(int playerNum)
+	{
+		if (playerNum == 1)
+		{
+			return gameBoard.length - 1;
+		}
+		if (playerNum == 2)
+		{
+			return 0;
+		}
+		else
+		{
+			throw new IllegalArgumentException("Doesn't have a winning row!");
+		}
+	}
+	
+	
+	
+	public int shortestPathToPlayer(int first, int second, int playerNum) {
 		
 		
 		Location playerLocation = getPlayerLocation(playerNum);
+		Location otherPlayerLocation = getOtherPlayerLocation(playerNum);
 		
 		// TODO Might be extra memory
 		int[][] completionTable = new int[gameBoard.length][gameBoard.length];
@@ -65,36 +164,25 @@ public class QuoridorBoardModel {
 		PriorityQueue<Location> pQueue= new PriorityQueue<Location>();
 		
 		
-		pQueue.add(playerLocation);
+		pQueue.add(new Location(first, second, 0));
 		
 		
 		while(pQueue.isEmpty() == false)
 		{
 		
 			Location currentLocation = pQueue.remove();
+			int addedCost = 1;
 			completionTable[currentLocation.first][currentLocation.second] = DONE;
 			
-			//-------------------------
-			// Short Circuit Conditions
-			//-------------------------
-			
-			// Player 1 Conditions
-			if(playerNum == 1)
+			if (currentLocation.first == playerLocation.first && currentLocation.second == playerLocation.second)
 			{
-				if (currentLocation.first == gameBoard.length - 1)
-				{
-					return currentLocation.cost;
-				}
-			}
-			// Player 2 Conditions
-			if(playerNum == 2)
-			{
-				if (currentLocation.first == 0)
-				{
-					return currentLocation.cost;
-				}
+				return currentLocation.cost;
 			}
 			
+			if (currentLocation.first == otherPlayerLocation.first && currentLocation.second == otherPlayerLocation.second)
+			{
+				addedCost = 0;
+			}
 			
 			
 			// If not done, check if more steps possible in current path
@@ -107,7 +195,7 @@ public class QuoridorBoardModel {
 				// If next not already dequeued
 				if(gameBoard[currentLocation.first][currentLocation.second - 2] != DONE)
 				{
-					pQueue.add(new Location(currentLocation.first, currentLocation.second - 2, currentLocation.cost + 1));
+					pQueue.add(new Location(currentLocation.first, currentLocation.second - 2, currentLocation.cost + addedCost));
 				}
 			}
 			
@@ -117,7 +205,7 @@ public class QuoridorBoardModel {
 				// If next not already dequeued
 				if(gameBoard[currentLocation.first][currentLocation.second + 2] != DONE)
 				{
-					pQueue.add(new Location(currentLocation.first, currentLocation.second + 2, currentLocation.cost + 1));
+					pQueue.add(new Location(currentLocation.first, currentLocation.second + 2, currentLocation.cost + addedCost));
 				}
 			}
 			
@@ -127,7 +215,7 @@ public class QuoridorBoardModel {
 				// If next not already dequeued
 				if(gameBoard[currentLocation.first][currentLocation.first - 2] != DONE)
 				{
-					pQueue.add(new Location(currentLocation.first - 2, currentLocation.second, currentLocation.cost + 1));
+					pQueue.add(new Location(currentLocation.first - 2, currentLocation.second, currentLocation.cost + addedCost));
 				}
 			}
 			
@@ -137,7 +225,7 @@ public class QuoridorBoardModel {
 				// If next not already dequeued
 				if(gameBoard[currentLocation.first][currentLocation.first + 2] != DONE)
 				{
-					pQueue.add(new Location(currentLocation.first + 2, currentLocation.second, currentLocation.cost + 1));
+					pQueue.add(new Location(currentLocation.first + 2, currentLocation.second, currentLocation.cost + addedCost));
 				}
 			}
 			
@@ -168,6 +256,36 @@ public class QuoridorBoardModel {
 	{
 		return null;
 	}
+	
+	
+	public void setPlayerLocation(int first, int second, int playerNum)
+	{
+		return;
+	}
+	
+	public Location getOtherPlayerLocation(int playerNum)
+	{
+		return null;
+	}
+	
+	
+	public int getOtherPlayerNum(int playerNum)
+	{
+		if (playerNum == 1)
+		{
+			return 2;
+		}
+		if (playerNum == 2)
+		{
+			return 1;
+		}
+		else
+		{
+			return -1;
+		}
+	}
+	
+	
 	
 	
 	
