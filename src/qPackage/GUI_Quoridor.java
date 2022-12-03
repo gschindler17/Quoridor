@@ -23,6 +23,14 @@ public class GUI_Quoridor extends Application implements PropertyChangeListener,
 	final int BLOCKED = 1;
 	
 	
+	final int OCCUPIED1 = 1;
+	final int OCCUPIED2 = 2;
+	final int UNOCCUPIED = 0;
+	
+	
+	private GridPane root;
+	
+	
 	/**
 	 * Model that is the "brains" of the program
 	 * Class: QuoridorBoardModel
@@ -61,7 +69,7 @@ public class GUI_Quoridor extends Application implements PropertyChangeListener,
 		
 		try {
 			
-			GridPane root = new GridPane();
+			root = new GridPane();
 			Scene scene = new Scene(root, 1100, 700);
 			primaryStage.setScene(scene);
 			primaryStage.setTitle("Quoridor");
@@ -105,16 +113,57 @@ public class GUI_Quoridor extends Application implements PropertyChangeListener,
 		{
 			for(int col = 0; col < gameBoard[0].length; col++)
 			{
+				
 				if (boardLogic.isHorizontalBarrier(row, col))
 				{
 					if(gameBoard[row][col] == PASSABLE)
 					{
-						Button temp = new Button("Barrier");
+						Button temp = new Button();
 						temp.setMaxSize(100, 10);
-						gameboardPane.add(temp, row, col);
+						gameboardPane.add(temp, col, row);
+						
+					}
+				}
+				if (boardLogic.isVerticalBarrier(row, col))
+				{
+					if(gameBoard[row][col] == PASSABLE)
+					{
+						Button temp = new Button();
+						temp.setMaxHeight(100);
+						temp.setMaxWidth(10);
+						gameboardPane.add(temp, col, row);
+						
+						
+					}
+				}
+				
+				if (boardLogic.isPlayerSquare(row, col))
+				{
+					if(gameBoard[row][col] == OCCUPIED1)
+					{
+						Button temp = new Button();
+						temp.setStyle("-fx-background-color: #ff0000; ");
+						temp.setMaxSize(200, 200);
+						gameboardPane.add(temp, col, row);
+						
+						
+					}
+					else if(gameBoard[row][col] == OCCUPIED2)
+					{
+						Button temp = new Button();
+						temp.setStyle("-fx-background-color: #FFD700; ");
+						temp.setMaxSize(200, 200);
+						gameboardPane.add(temp, col, row);
+					}
+					else
+					{
+						Button temp = new Button();
+						temp.setMaxSize(200, 200);
+						gameboardPane.add(temp, col, row);
 					}
 				}
 			}
+			System.out.println();
 		}
 		
 	}
@@ -128,30 +177,43 @@ public class GUI_Quoridor extends Application implements PropertyChangeListener,
 	}
 
 	@Override
-	public void handle(ActionEvent arg0) {
-		// TODO Auto-generated method stub
+	public void handle(ActionEvent event) {
+		if (event.getSource() == setSizeCB)
+		{
+			Integer size = setSizeCB.getSelectionModel().getSelectedItem();
+			boardLogic.setBoardSize(size);
+		} 
 		
 	}
 
 	
 	
 	
-
-
-
-
-	@Override
-	public void propertyChange(PropertyChangeEvent evt) {
-		// TODO Auto-generated method stub
+	
+	
+//---------------------------------------------------------------------------------------------------
+//----------------------------CONTROLLER CODE--------------------------------------------------------
+//---------------------------------------------------------------------------------------------------
+	
+	
+public void propertyChange(PropertyChangeEvent evt) {
+		
+	
+		if (evt.getPropertyName().equals("setSize"))
+		{
+			gameboardPane.getChildren().clear();
+			this.updateGameBoard();
+		}
+		if (evt.getPropertyName().equals("setValueAt"))
+		{
+			
+		}
 		
 	}
-	
-	
 	
 	
 	public static void main(String[] args) {
 		launch(args);
 	}
-	
 	
 }

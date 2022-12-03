@@ -9,7 +9,9 @@ public class QuoridorBoardModel {
 	/** A helper object to handle observer pattern behavior */
 	protected PropertyChangeSupport pcs = new PropertyChangeSupport(this);
 	
-	
+	final int OCCUPIED1 = 1;
+	final int OCCUPIED2 = 2;
+	final int UNOCCUPIED = 0;
 	
 	final int DONE = 1;
 	
@@ -18,17 +20,37 @@ public class QuoridorBoardModel {
 	
 	
 	
+	
+	private Location player1Location;
+	
+	private Location player2Location;
+	
+	
 	private int boardSize;
 	
 	int[][] gameBoard; 
 	
 	public QuoridorBoardModel () {
 		
+		player1Location = new Location(0, 0, 0);
+		player2Location = new Location(0, 0, 0);
+		
+		
+		
 		// Tells the view a model was instantiated
 		pcs.firePropertyChange("instantiation", null, null);
 		
-		// Sets the gameBoard to a size 3 square
+		
+		
+		
+		
+		// Sets the gameBoard to a size
+		boardSize = 5;
+		
 		setBoardSize(5);
+		
+
+		
 		return;
 		
 	}
@@ -40,6 +62,7 @@ public class QuoridorBoardModel {
 	
 	public void setBoardSize(int _boardSize)
 	{
+		
 		if (_boardSize > 0)
 		{
 			boardSize = _boardSize;
@@ -47,7 +70,20 @@ public class QuoridorBoardModel {
 		
 		// If there are n spaces, then there are n-1 barriers too
 		gameBoard = new int[(boardSize * 2) - 1][(boardSize * 2) - 1];
+		
+		
+		setPlayerLocation(0, (boardSize / 2) + 2, 1);
+		setPlayerLocation((boardSize * 2) - 2, (boardSize / 2) + 2, 2);
+		
+		
+		pcs.firePropertyChange("setSize", null, boardSize);
 	}
+	
+	
+	
+	
+	
+	
 	
 	// TODO Check if first and second valid indices
 	// TODO Check if previously played
@@ -254,13 +290,59 @@ public class QuoridorBoardModel {
 	
 	public Location getPlayerLocation(int playerNum)
 	{
-		return null;
+		if (playerNum == 1)
+		{
+			return player1Location;
+		}
+		if (playerNum == 2)
+		{
+			return player2Location;
+		}
+		else
+		{
+			throw new IllegalArgumentException("Can't get that player's location as they don't exist!!");
+		}
 	}
 	
-	
-	public void setPlayerLocation(int first, int second, int playerNum)
+	// TODO Change methods to check if valid player location
+	private void setPlayerLocation(int first, int second, int playerNum)
 	{
-		return;
+		Location playerLocation = getPlayerLocation(playerNum);
+		
+		if (validBoardIndex(first) && validBoardIndex(second))
+		{
+			
+			if (getPlayerLocation(playerNum) == null && playerNum == 1)
+			{
+				player1Location = new Location(0,0,0);
+			}
+			if (getPlayerLocation(playerNum) == null && playerNum == 2)
+			{
+				player2Location = new Location(0,0,0);
+			}
+			
+			
+			if (validBoardIndex(playerLocation.first) && validBoardIndex(playerLocation.second))
+			{
+				gameBoard[playerLocation.first][playerLocation.second] = UNOCCUPIED;
+			}
+			
+			playerLocation.first = first;
+			playerLocation.second = second;
+			
+			if (playerNum == 1)
+			{
+				gameBoard[playerLocation.first][playerLocation.second] = OCCUPIED1;
+			}
+			else
+			{
+				gameBoard[playerLocation.first][playerLocation.second] = OCCUPIED2;
+			}
+		}
+		else
+		{
+			throw new IllegalArgumentException("You can't move a player to an invalid location!!");
+		}
 	}
 	
 	public Location getOtherPlayerLocation(int playerNum)
@@ -316,6 +398,31 @@ public class QuoridorBoardModel {
 	}
 	
 	
+	public boolean isVerticalBarrier(int first, int second) 
+	{
+		if (second % 2 == 1 && first % 2 == 0)
+		{
+			return true;
+		}
+		else
+		{
+			return false;
+		}
+	}
+	
+	
+	public boolean isPlayerSquare(int first, int second)
+	{
+		if (first % 2 == 0 && second % 2 == 0)
+		{
+			return true;
+		}
+		else
+		{
+			return false;
+		}
+	}
+	
 	
 	
 	
@@ -368,5 +475,12 @@ public class QuoridorBoardModel {
     public void removePropertyChangeListener(PropertyChangeListener listener) {
         this.pcs.removePropertyChangeListener(listener);
     }
+
+
+
+
+
+
+	
 	
 }
