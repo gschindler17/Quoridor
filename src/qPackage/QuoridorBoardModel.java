@@ -2,7 +2,6 @@ package qPackage;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
-import java.util.Collections;
 import java.util.PriorityQueue;
 
 public class QuoridorBoardModel {
@@ -286,6 +285,35 @@ public class QuoridorBoardModel {
 		}
 	}
 	
+	
+	public int[][] getGameBoard()
+	{
+		return gameBoard;
+	}
+	
+	public boolean isNullBarrier(int first, int second)
+	{
+		if (first % 2 == 1 && second % 2 == 1)
+		{
+			return true;
+		}
+		else
+		{
+			return false;
+		}
+	}
+	
+	public boolean isHorizontalBarrier(int first, int second)
+	{
+		if (first % 2 == 1 && second % 2 == 0)
+		{
+			return true;
+		}
+		else
+		{
+			return false;
+		}
+	}
 	
 	
 	

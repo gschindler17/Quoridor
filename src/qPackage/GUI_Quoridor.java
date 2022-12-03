@@ -13,13 +13,16 @@ import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
-import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 import javafx.stage.Stage;
 
 
 public class GUI_Quoridor extends Application implements PropertyChangeListener, EventHandler<ActionEvent>, ChangeListener<String>{
 
+	final int PASSABLE = 0;
+	final int BLOCKED = 1;
+	
+	
 	/**
 	 * Model that is the "brains" of the program
 	 * Class: QuoridorBoardModel
@@ -76,7 +79,7 @@ public class GUI_Quoridor extends Application implements PropertyChangeListener,
 			setSizeCB.setOnAction(this);
 			
 			
-			gameboardPane = new GridPane();
+			updateGameBoard();
 			
 			
 			root.add(gameboardPane, 2, 2);
@@ -93,6 +96,31 @@ public class GUI_Quoridor extends Application implements PropertyChangeListener,
 	}
 	
 	
+	public void updateGameBoard()
+	{
+		int[][] gameBoard = boardLogic.getGameBoard();
+		gameboardPane = new GridPane();
+		
+		for (int row = 0; row < gameBoard.length; row++)
+		{
+			for(int col = 0; col < gameBoard[0].length; col++)
+			{
+				if (boardLogic.isHorizontalBarrier(row, col))
+				{
+					if(gameBoard[row][col] == PASSABLE)
+					{
+						Button temp = new Button("Barrier");
+						temp.setMaxSize(100, 10);
+						gameboardPane.add(temp, row, col);
+					}
+				}
+			}
+		}
+		
+	}
+	
+	
+	
 	@Override
 	public void changed(ObservableValue<? extends String> arg0, String arg1, String arg2) {
 		// TODO Auto-generated method stub
@@ -105,6 +133,8 @@ public class GUI_Quoridor extends Application implements PropertyChangeListener,
 		
 	}
 
+	
+	
 	
 
 
