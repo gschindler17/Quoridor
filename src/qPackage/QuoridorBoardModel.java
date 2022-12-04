@@ -42,16 +42,11 @@ public class QuoridorBoardModel {
 		
 		
 		
-		
-		
 		// Sets the gameBoard to a size
 		boardSize = 5;
 		
 		setBoardSize(5);
 		
-
-		
-		return;
 		
 	}
 	
@@ -62,21 +57,35 @@ public class QuoridorBoardModel {
 	
 	public void setBoardSize(int _boardSize)
 	{
+		if (_boardSize % 2 == 0)
+		{
+			throw new IllegalArgumentException("You can't have a board that doesn't have a middle column!!");
+		}
+		
+		
 		
 		if (_boardSize > 0)
 		{
 			boardSize = _boardSize;
 		}
-		
+	
 		// If there are n spaces, then there are n-1 barriers too
 		gameBoard = new int[(boardSize * 2) - 1][(boardSize * 2) - 1];
 		
 		
-		setPlayerLocation(0, (boardSize / 2) + 2, 1);
-		setPlayerLocation((boardSize * 2) - 2, (boardSize / 2) + 2, 2);
+		int middleCol = getMiddleCol();
+		
+		
+		setPlayerLocation(0, middleCol, 1);
+		setPlayerLocation((boardSize * 2) - 2, middleCol, 2);
 		
 		
 		pcs.firePropertyChange("setSize", null, boardSize);
+	}
+	
+	public int getMiddleCol()
+	{
+		return ((boardSize * 2) - 1) / 2;
 	}
 	
 	
@@ -422,6 +431,54 @@ public class QuoridorBoardModel {
 			return false;
 		}
 	}
+	
+	public boolean isBarrier(int first, int second)
+	{
+		if (first % 2 == 1 && second % 2 == 1)
+		{
+			return true;
+		}
+		else
+		{
+			return false;
+		}
+	}
+	
+	public boolean passable(int first, int second)
+	{
+		if (gameBoard[first][second] == PASSABLE)
+		{
+			return true;
+		}
+		else
+		{
+			return false;
+		}
+	}
+	
+	public boolean occupiedPlayer1(int first, int second)
+	{
+		if (gameBoard[first][second] == OCCUPIED1)
+		{
+			return true;
+		}
+		else
+		{
+			return false;
+		}
+	} 
+	
+	public boolean occupiedPlayer2(int first, int second)
+	{
+		if (gameBoard[first][second] == OCCUPIED2)
+		{
+			return true;
+		}
+		else
+		{
+			return false;
+		}
+	} 
 	
 	
 	
