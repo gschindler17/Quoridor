@@ -103,9 +103,6 @@ public class GUI_Quoridor extends Application implements PropertyChangeListener,
 		int[][] gameBoard = boardLogic.getGameBoard();
 		
 		
-		
-		
-		
 		gameboardPane = new GridPane();
 		
 		
@@ -116,65 +113,60 @@ public class GUI_Quoridor extends Application implements PropertyChangeListener,
 				
 				System.out.print(gameBoard[row][col] + ", ");
 				
-				
-				if (boardLogic.isHorizontalBarrier(row, col))
+				if (boardLogic.isBarrier(row, col) && !(boardLogic.isNullBarrier(row, col)))
 				{
 					Button temp = new Button();
-					temp.setPrefSize(100, 10);
-					temp.setMaxHeight(8);
-					gameboardPane.add(temp, col, row);
+					temp.setOnAction(this);
 					
-					if(boardLogic.passable(row, col))
+			
+					if (boardLogic.isHorizontalBarrier(row, col))
 					{
-						temp.setStyle("-fx-background-color: #DCDCDC; ");
-					}
-					else
-					{
-						temp.setStyle("-fx-background-color: #000000; ");
-					}
-				}
-				else if (boardLogic.isVerticalBarrier(row, col))
-				{
-					
-					Button temp = new Button();
-					temp.setPrefSize(10, 100);
-					gameboardPane.add(temp, col, row);
+						temp.setPrefSize(100, 10);
+						temp.setMaxHeight(8);
 						
-	
-					if(boardLogic.passable(row, col))
-					{
-						temp.setStyle("-fx-background-color: #DCDCDC; ");
+						if(boardLogic.passable(row, col))
+						{
+							temp.setStyle("-fx-background-color: #DCDCDC; ");
+						}
+						else
+						{
+							temp.setStyle("-fx-background-color: #000000; ");
+						}
 					}
-					else
+					else if (boardLogic.isVerticalBarrier(row, col))
 					{
-						temp.setStyle("-fx-background-color: #000000; ");
+						temp.setPrefSize(10, 100);
+			
+						if(boardLogic.passable(row, col))
+						{
+							temp.setStyle("-fx-background-color: #DCDCDC; ");
+						}
+						else
+						{
+							temp.setStyle("-fx-background-color: #000000; ");
+						}
 					}
+					
+					gameboardPane.add(temp, col, row);
 				}
 				
 				else if (boardLogic.isPlayerSquare(row, col))
 				{
+					Button temp = new Button();
+					temp.setOnAction(this);
+					temp.setPrefSize(100, 100);
+					
 					if(boardLogic.occupiedPlayer1(row, col))
 					{
-						Button temp = new Button();
 						temp.setStyle("-fx-background-color: #ff0000; ");
-						temp.setPrefSize(100, 100);
-						gameboardPane.add(temp, col, row);
-						
-						
+					
 					}
 					else if(boardLogic.occupiedPlayer2(row, col))
 					{
-						Button temp = new Button();
 						temp.setStyle("-fx-background-color: #FFD700; ");
-						temp.setPrefSize(100, 100);
-						gameboardPane.add(temp, col, row);
 					}
-					else
-					{
-						Button temp = new Button();
-						temp.setPrefSize(100, 100);
-						gameboardPane.add(temp, col, row);
-					}
+					
+					gameboardPane.add(temp, col, row);
 				}
 				
 				

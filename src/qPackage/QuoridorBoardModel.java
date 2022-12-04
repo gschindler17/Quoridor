@@ -434,7 +434,7 @@ public class QuoridorBoardModel {
 	
 	public boolean isBarrier(int first, int second)
 	{
-		if (first % 2 == 1 && second % 2 == 1)
+		if (first % 2 == 1 || second % 2 == 1)
 		{
 			return true;
 		}
