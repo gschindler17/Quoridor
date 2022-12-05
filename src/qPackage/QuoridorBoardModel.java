@@ -19,7 +19,7 @@ public class QuoridorBoardModel {
 	final int BLOCKED = 1;
 	
 	
-	
+	private int currentPlayer;
 	
 	private Location player1Location;
 	
@@ -31,6 +31,8 @@ public class QuoridorBoardModel {
 	int[][] gameBoard; 
 	
 	public QuoridorBoardModel () {
+		
+		currentPlayer = 1;
 		
 		player1Location = new Location(0, 0, 0);
 		player2Location = new Location(0, 0, 0);
@@ -96,8 +98,11 @@ public class QuoridorBoardModel {
 	
 	// TODO Check if first and second valid indices
 	// TODO Check if previously played
-	public void completeMove(int first, int second, int playerNum)
+	public void completeMove(int first, int second)
 	{
+		
+		int playerNum = currentPlayer;
+		
 		Location currentLocation = getPlayerLocation(playerNum);
 		Location otherPlayerLocation = getOtherPlayerLocation(playerNum);
 		
@@ -122,6 +127,7 @@ public class QuoridorBoardModel {
 			}
 			else
 			{
+				nextTurn();
 				return;
 			}
 		}
@@ -131,10 +137,13 @@ public class QuoridorBoardModel {
 		if (shortestPathToPlayer(first, second, playerNum) == 1)
 		{
 			setPlayerLocation(first, second, playerNum);
+			nextTurn();
 		}
 		else
 		{
-			throw new IllegalArgumentException("You can't move that far!");
+			System.out.println("\nYou're shortest path was: " + shortestPathToPlayer(first, second, playerNum));
+			
+//			throw new IllegalArgumentException("You can't move that far!");
 		}
 		
 		
@@ -202,7 +211,6 @@ public class QuoridorBoardModel {
 		Location playerLocation = getPlayerLocation(playerNum);
 		Location otherPlayerLocation = getOtherPlayerLocation(playerNum);
 		
-		// TODO Might be extra memory
 		int[][] completionTable = new int[gameBoard.length][gameBoard.length];
 		
 		
@@ -212,9 +220,11 @@ public class QuoridorBoardModel {
 		pQueue.add(new Location(first, second, 0));
 		
 		
-		while(pQueue.isEmpty() == false)
+		while(!(pQueue.isEmpty()))
 		{
-		
+			System.out.println("While");
+			
+			
 			Location currentLocation = pQueue.remove();
 			int addedCost = 1;
 			completionTable[currentLocation.first][currentLocation.second] = DONE;
@@ -258,7 +268,7 @@ public class QuoridorBoardModel {
 			if (validBoardIndex(currentLocation.first - 1) && gameBoard[currentLocation.first - 1][currentLocation.second] == PASSABLE)
 			{
 				// If next not already dequeued
-				if(gameBoard[currentLocation.first][currentLocation.first - 2] != DONE)
+				if(gameBoard[currentLocation.first - 2][currentLocation.second] != DONE)
 				{
 					pQueue.add(new Location(currentLocation.first - 2, currentLocation.second, currentLocation.cost + addedCost));
 				}
@@ -268,7 +278,7 @@ public class QuoridorBoardModel {
 			if (validBoardIndex(currentLocation.first + 1) && gameBoard[currentLocation.first + 1][currentLocation.second] == PASSABLE)
 			{
 				// If next not already dequeued
-				if(gameBoard[currentLocation.first][currentLocation.first + 2] != DONE)
+				if(gameBoard[currentLocation.first + 2][currentLocation.second] != DONE)
 				{
 					pQueue.add(new Location(currentLocation.first + 2, currentLocation.second, currentLocation.cost + addedCost));
 				}
@@ -356,7 +366,18 @@ public class QuoridorBoardModel {
 	
 	public Location getOtherPlayerLocation(int playerNum)
 	{
-		return null;
+		if (playerNum == 1)
+		{
+			return player2Location;
+		}
+		else if (playerNum == 2)
+		{
+			return player1Location;
+		}
+		else
+		{
+			throw new IllegalArgumentException("You can't find another player because you have an invalid playerNum!!");
+		}
 	}
 	
 	
@@ -479,6 +500,17 @@ public class QuoridorBoardModel {
 			return false;
 		}
 	} 
+	
+	public void nextTurn() {
+		if (currentPlayer == 1)
+		{
+			currentPlayer = 2;
+		}
+		else if(currentPlayer == 2)
+		{
+			currentPlayer = 1;
+		}
+	}
 	
 	
 	

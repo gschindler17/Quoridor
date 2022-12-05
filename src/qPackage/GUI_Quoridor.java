@@ -115,7 +115,7 @@ public class GUI_Quoridor extends Application implements PropertyChangeListener,
 				
 				if (boardLogic.isBarrier(row, col) && !(boardLogic.isNullBarrier(row, col)))
 				{
-					Button temp = new Button();
+					SmartButton temp = new SmartButton(row, col);
 					temp.setOnAction(this);
 					
 			
@@ -152,7 +152,7 @@ public class GUI_Quoridor extends Application implements PropertyChangeListener,
 				
 				else if (boardLogic.isPlayerSquare(row, col))
 				{
-					Button temp = new Button();
+					SmartButton temp = new SmartButton(row, col);
 					temp.setOnAction(this);
 					temp.setPrefSize(100, 100);
 					
@@ -193,7 +193,18 @@ public class GUI_Quoridor extends Application implements PropertyChangeListener,
 		{
 			Integer size = setSizeCB.getSelectionModel().getSelectedItem();
 			boardLogic.setBoardSize(size);
-		} 
+		}
+		
+		
+		
+		
+		
+		if (event.getSource() instanceof SmartButton)
+		{
+			SmartButton selectedButton = (SmartButton) event.getSource();
+			
+			boardLogic.completeMove(selectedButton.row, selectedButton.col);
+		}
 		
 	}
 
