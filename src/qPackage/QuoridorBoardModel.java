@@ -116,7 +116,7 @@ public class QuoridorBoardModel {
 			throw new IllegalArgumentException("You can't play on top yourself!!");
 		}
 		
-		if (first % 2 == 1 || second % 2 == 1)
+		if (isBarrier(first, second) && !(isNullBarrier(first, second)))
 		{
 			gameBoard[first][second] = BLOCKED;
 			
@@ -133,7 +133,7 @@ public class QuoridorBoardModel {
 		}
 		
 		
-		
+		System.out.println("\nYou're shortest path was: " + shortestPathToPlayer(first, second, playerNum));
 		if (shortestPathToPlayer(first, second, playerNum) == 1)
 		{
 			setPlayerLocation(first, second, playerNum);
@@ -141,9 +141,7 @@ public class QuoridorBoardModel {
 		}
 		else
 		{
-			System.out.println("\nYou're shortest path was: " + shortestPathToPlayer(first, second, playerNum));
-			
-//			throw new IllegalArgumentException("You can't move that far!");
+			throw new IllegalArgumentException("You can't move that far!");
 		}
 		
 		
@@ -157,7 +155,7 @@ public class QuoridorBoardModel {
 		int smallestCost = Integer.MAX_VALUE;
 		
 		
-		for (int col = 0; col < gameBoard[0].length; col++)
+		for (int col = 0; col < gameBoard[0].length; col = col + 2)
 		{
 			int pathLength = shortestPathToPlayer(winningRow(playerNum), col, playerNum);
 			
@@ -222,10 +220,13 @@ public class QuoridorBoardModel {
 		
 		while(!(pQueue.isEmpty()))
 		{
-			System.out.println("While");
-			
 			
 			Location currentLocation = pQueue.remove();
+			
+			System.out.println("\nCurrent Location:" + "\nfirst: " + currentLocation.first + "\nsecond: " + currentLocation.second + "\ncost: " + currentLocation.cost);
+			
+			
+			
 			int addedCost = 1;
 			completionTable[currentLocation.first][currentLocation.second] = DONE;
 			
@@ -246,9 +247,9 @@ public class QuoridorBoardModel {
 			
 			// Checks left
 			if (validBoardIndex(currentLocation.second - 1) && gameBoard[currentLocation.first][currentLocation.second - 1] == PASSABLE)
-			{
+			{	
 				// If next not already dequeued
-				if(gameBoard[currentLocation.first][currentLocation.second - 2] != DONE)
+				if(completionTable[currentLocation.first][currentLocation.second - 2] != DONE)
 				{
 					pQueue.add(new Location(currentLocation.first, currentLocation.second - 2, currentLocation.cost + addedCost));
 				}
@@ -258,7 +259,7 @@ public class QuoridorBoardModel {
 			if (validBoardIndex(currentLocation.second + 1) && gameBoard[currentLocation.first][currentLocation.second + 1] == PASSABLE)
 			{
 				// If next not already dequeued
-				if(gameBoard[currentLocation.first][currentLocation.second + 2] != DONE)
+				if(completionTable[currentLocation.first][currentLocation.second + 2] != DONE)
 				{
 					pQueue.add(new Location(currentLocation.first, currentLocation.second + 2, currentLocation.cost + addedCost));
 				}
@@ -268,7 +269,7 @@ public class QuoridorBoardModel {
 			if (validBoardIndex(currentLocation.first - 1) && gameBoard[currentLocation.first - 1][currentLocation.second] == PASSABLE)
 			{
 				// If next not already dequeued
-				if(gameBoard[currentLocation.first - 2][currentLocation.second] != DONE)
+				if(completionTable[currentLocation.first - 2][currentLocation.second] != DONE)
 				{
 					pQueue.add(new Location(currentLocation.first - 2, currentLocation.second, currentLocation.cost + addedCost));
 				}
@@ -278,7 +279,7 @@ public class QuoridorBoardModel {
 			if (validBoardIndex(currentLocation.first + 1) && gameBoard[currentLocation.first + 1][currentLocation.second] == PASSABLE)
 			{
 				// If next not already dequeued
-				if(gameBoard[currentLocation.first + 2][currentLocation.second] != DONE)
+				if(completionTable[currentLocation.first + 2][currentLocation.second] != DONE)
 				{
 					pQueue.add(new Location(currentLocation.first + 2, currentLocation.second, currentLocation.cost + addedCost));
 				}
@@ -510,6 +511,8 @@ public class QuoridorBoardModel {
 		{
 			currentPlayer = 1;
 		}
+		
+		pcs.firePropertyChange("nextTurn", null, currentPlayer);
 	}
 	
 	
