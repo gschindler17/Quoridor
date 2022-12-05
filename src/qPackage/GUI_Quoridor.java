@@ -8,7 +8,9 @@ import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
+import javafx.geometry.Insets;
 import javafx.scene.Scene;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
@@ -50,6 +52,9 @@ public class GUI_Quoridor extends Application implements PropertyChangeListener,
 	private Button resetButton;
 	
 	
+	private Label currentTurnLabel;
+	
+	
 	public GUI_Quoridor() {
 		boardLogic = new QuoridorBoardModel();
 		
@@ -64,12 +69,12 @@ public class GUI_Quoridor extends Application implements PropertyChangeListener,
 		try {
 			
 			root = new GridPane();
-			Scene scene = new Scene(root, 1440, 1080);
+			Scene scene = new Scene(root, 800, 700);
 			primaryStage.setScene(scene);
 			primaryStage.setTitle("Quoridor");
 			
-			
-	
+			currentTurnLabel = new Label("It is currently Player " + boardLogic.getCurrentPlayer() + "'s turn");
+			currentTurnLabel.setPadding(new Insets(20));
 			
 			
 			resetButton = new Button("Clear");
@@ -86,13 +91,17 @@ public class GUI_Quoridor extends Application implements PropertyChangeListener,
 			
 			
 			root.add(setSizeCB, 0, 1);
-			root.add(resetButton, 0, 2);
+			root.add(currentTurnLabel, 1, 1);
+			root.add(resetButton, 0, 3);
 			
 			primaryStage.show();
 			
 			
-		} catch (Exception e) {
-			e.printStackTrace();
+		} catch (Exception _exception) {
+				Alert alert = new Alert(Alert.AlertType.ERROR);
+	    		alert.setTitle("Something doesn't look right...");
+	    		alert.setContentText(_exception.getMessage());
+	    		alert.showAndWait();
 		}
 		
 	}
@@ -117,34 +126,22 @@ public class GUI_Quoridor extends Application implements PropertyChangeListener,
 				{
 					SmartButton temp = new SmartButton(row, col);
 					temp.setOnAction(this);
-					
+					if(boardLogic.passable(row, col))
+					{
+						temp.setStyle("-fx-background-color: #9cbff7; ");
+					}
+					else
+					{
+						temp.setStyle("-fx-background-color: #000000; ");
+					}
 			
 					if (boardLogic.isHorizontalBarrier(row, col))
 					{
-						temp.setPrefSize(100, 10);
-						temp.setMaxHeight(8);
-						
-						if(boardLogic.passable(row, col))
-						{
-							temp.setStyle("-fx-background-color: #DCDCDC; ");
-						}
-						else
-						{
-							temp.setStyle("-fx-background-color: #000000; ");
-						}
+						temp.setPrefSize(100, 10);						
 					}
 					else if (boardLogic.isVerticalBarrier(row, col))
 					{
-						temp.setPrefSize(10, 100);
-			
-						if(boardLogic.passable(row, col))
-						{
-							temp.setStyle("-fx-background-color: #DCDCDC; ");
-						}
-						else
-						{
-							temp.setStyle("-fx-background-color: #000000; ");
-						}
+						temp.setPrefSize(20, 100);
 					}
 					
 					gameboardPane.add(temp, col, row);
@@ -176,10 +173,14 @@ public class GUI_Quoridor extends Application implements PropertyChangeListener,
 			System.out.println();
 		}
 		
-		root.add(gameboardPane, 2, 2);
+		root.add(gameboardPane, 1, 2);
 	}
 	
-	
+	public void updateFeedback() {
+		root.getChildren().remove(currentTurnLabel);
+		currentTurnLabel.setText("It is currently Player " + boardLogic.getCurrentPlayer() + "'s turn");
+		root.add(currentTurnLabel, 1, 1);
+	}
 	
 	@Override
 	public void changed(ObservableValue<? extends String> arg0, String arg1, String arg2) {
@@ -195,15 +196,25 @@ public class GUI_Quoridor extends Application implements PropertyChangeListener,
 			boardLogic.setBoardSize(size);
 		}
 		
-		
-		
-		
-		
-		if (event.getSource() instanceof SmartButton)
+		if (event.getSource() == resetButton)
 		{
-			SmartButton selectedButton = (SmartButton) event.getSource();
-			
-			boardLogic.completeMove(selectedButton.row, selectedButton.col);
+			boardLogic.resetBoard();
+		}
+		
+		
+		
+		try {
+			if (event.getSource() instanceof SmartButton)
+			{
+				SmartButton selectedButton = (SmartButton) event.getSource();
+				
+				boardLogic.completeMove(selectedButton.row, selectedButton.col);
+			}
+		}catch (Exception _exception) {
+			Alert alert = new Alert(Alert.AlertType.ERROR);
+    		alert.setTitle("Something doesn't look right...");
+    		alert.setContentText(_exception.getMessage());
+    		alert.showAndWait();
 		}
 		
 	}
@@ -228,8 +239,10 @@ public void propertyChange(PropertyChangeEvent evt) {
 		}
 		if (evt.getPropertyName().equals("nextTurn"))
 		{
+			System.out.println("NEXT TURN\n\n");
 			gameboardPane.getChildren().clear();
 			this.updateGameBoard();
+			this.updateFeedback();
 		}
 		
 	}

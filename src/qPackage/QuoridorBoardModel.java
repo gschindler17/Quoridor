@@ -85,6 +85,23 @@ public class QuoridorBoardModel {
 		pcs.firePropertyChange("setSize", null, boardSize);
 	}
 	
+	public void resetBoard()
+	{
+		// If there are n spaces, then there are n-1 barriers too
+		gameBoard = new int[(boardSize * 2) - 1][(boardSize * 2) - 1];
+		
+		
+		int middleCol = getMiddleCol();
+		
+		
+		setPlayerLocation(0, middleCol, 1);
+		setPlayerLocation((boardSize * 2) - 2, middleCol, 2);
+		
+		
+		pcs.firePropertyChange("setSize", null, boardSize);
+	}
+	
+	
 	public int getMiddleCol()
 	{
 		return ((boardSize * 2) - 1) / 2;
@@ -513,6 +530,10 @@ public class QuoridorBoardModel {
 		}
 		
 		pcs.firePropertyChange("nextTurn", null, currentPlayer);
+	}
+	
+	public int getCurrentPlayer() {
+		return currentPlayer;
 	}
 	
 	
