@@ -120,9 +120,11 @@ public class GUI_Quoridor extends Application implements PropertyChangeListener,
 			
 		gameboardPane = new GridPane();
 		
-		for (int row = 0; row < boardLogic.getGameBoard().length; row++)
+		int boardLength = boardLogic.getGameBoard().length;
+		
+		for (int row = 0; row < boardLength; row++)
 		{
-			for(int col = 0; col < boardLogic.getGameBoard().length; col++)
+			for(int col = 0; col < boardLength; col++)
 			{
 				// If the location is a barrier, create barrier buttons
 				if (boardLogic.isBarrier(row, col) && !(boardLogic.isNullBarrier(row, col)))
