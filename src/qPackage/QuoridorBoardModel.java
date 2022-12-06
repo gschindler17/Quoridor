@@ -30,10 +30,17 @@ public class QuoridorBoardModel {
 	
 	int[][] gameBoard; 
 	
+	
+	/**
+	 * Constructor
+	 * Instantiates the "brains" of the game
+	 */
 	public QuoridorBoardModel () {
 		
+		// Player 1 starts first
 		currentPlayer = 1;
 		
+		// Instantiates the players' locations
 		player1Location = new Location(0, 0, 0);
 		player2Location = new Location(0, 0, 0);
 		
@@ -47,7 +54,7 @@ public class QuoridorBoardModel {
 		// Sets the gameBoard to a size
 		boardSize = 5;
 		
-		setBoardSize(5);
+		setBoardSize(boardSize);
 		
 		
 	}
@@ -56,17 +63,25 @@ public class QuoridorBoardModel {
 	
 	
 	
-	
+	/**
+	 * Sets the board to a specified sizes
+	 * @param _boardSize
+	 * @throws IllegalArgumentException if the board is even or too small
+	 */
 	public void setBoardSize(int _boardSize)
 	{
+		// Handling illegal input
 		if (_boardSize % 2 == 0)
 		{
 			throw new IllegalArgumentException("You can't have a board that doesn't have a middle column!!");
 		}
+		if (_boardSize < 3)
+		{
+			throw new IllegalArgumentException("You can't have a board that small!");
+		}
 		
 		
-		
-		if (_boardSize > 0)
+		if (_boardSize >= 3)
 		{
 			boardSize = _boardSize;
 		}
@@ -75,33 +90,27 @@ public class QuoridorBoardModel {
 		gameBoard = new int[(boardSize * 2) - 1][(boardSize * 2) - 1];
 		
 		
+		
 		int middleCol = getMiddleCol();
 		
-		
-		setPlayerLocation(0, middleCol, 1);
+		// Starts the players off in the middle of their respective row
 		setPlayerLocation((boardSize * 2) - 2, middleCol, 2);
+		setPlayerLocation(0, middleCol, 1);
 		
 		
+		// Tells the model that the size has been set
 		pcs.firePropertyChange("setSize", null, boardSize);
 	}
 	
+	/**
+	 * Sets the board to its original state at the current size
+	 */
 	public void resetBoard()
-	{
-		// If there are n spaces, then there are n-1 barriers too
-		gameBoard = new int[(boardSize * 2) - 1][(boardSize * 2) - 1];
-		
-		
-		int middleCol = getMiddleCol();
-		
-		
-		setPlayerLocation(0, middleCol, 1);
-		setPlayerLocation((boardSize * 2) - 2, middleCol, 2);
-		
-		
-		pcs.firePropertyChange("setSize", null, boardSize);
+	{	
+		setBoardSize(boardSize);	
 	}
 	
-	
+	// Returns the middle col that the players should default start at
 	public int getMiddleCol()
 	{
 		return ((boardSize * 2) - 1) / 2;
@@ -109,12 +118,12 @@ public class QuoridorBoardModel {
 	
 	
 	
-	
-	
-	
-	
-	// TODO Check if first and second valid indices
-	// TODO Check if previously played
+	/**
+	 * Takes in the coordinates that the currentPlayer wants to move to
+	 * 
+	 * @param first
+	 * @param second
+	 */
 	public void completeMove(int first, int second)
 	{
 		
@@ -124,6 +133,11 @@ public class QuoridorBoardModel {
 		Location otherPlayerLocation = getOtherPlayerLocation(playerNum);
 		
 		
+		// Ensuring the input is valid
+		if (!(validBoardIndex(first)) || !(validBoardIndex(second)))
+		{
+			throw new IllegalArgumentException("You can't move to an invalid space!!");
+		}
 		if (otherPlayerLocation.first == first && otherPlayerLocation.second == second)
 		{
 			throw new IllegalArgumentException("You can't play on top of the other player's location!!");
@@ -132,11 +146,24 @@ public class QuoridorBoardModel {
 		{
 			throw new IllegalArgumentException("You can't play on top yourself!!");
 		}
-		
-		if (isBarrier(first, second) && !(isNullBarrier(first, second)))
+		if (isNullBarrier(first, second))
 		{
+			throw new IllegalArgumentException("You can't play in crux of all of the barriers!!");
+		}
+		
+		
+		// If the location that the player plays is an actual barrier
+		if (isBarrier(first, second))
+		{
+			if(gameBoard[first][second] == BLOCKED)
+			{
+				throw new IllegalArgumentException("Someone already filled that barrier!!");
+			}
+			
+			// Set it to blocked
 			gameBoard[first][second] = BLOCKED;
 			
+			// If this blocks a winning path for either player, state that the barrier cannot be played
 			if (shortestPathToWin(playerNum) == -1 || shortestPathToWin(getOtherPlayerNum(playerNum)) == -1)
 			{
 				gameBoard[first][second] = PASSABLE;
@@ -144,22 +171,31 @@ public class QuoridorBoardModel {
 			}
 			else
 			{
+				// Switch to the next turn
 				nextTurn();
 				return;
 			}
 		}
 		
-		
+		// If it is not a barrier, then it is a player space
+		// If it is within a reach of 1, then it is a valid player space
 		if (shortestPathToPlayer(first, second, playerNum) == 1)
 		{
 			setPlayerLocation(first, second, playerNum);
+			
+			// Check to see if the current player has won with this move
 			if (hasWon(playerNum))
 			{
 				pcs.firePropertyChange("winner", null, currentPlayer);
 				return;
 			}
-			nextTurn();
+			// else, go to the next turn
+			else
+			{
+				nextTurn();
+			}
 		}
+		// if > 1, then it isn't a valid space to move to in one turn and requires more than 1 turn to complete
 		else
 		{
 			throw new IllegalArgumentException("You can't move that far!");
@@ -169,6 +205,12 @@ public class QuoridorBoardModel {
 		
 	}
 	
+	
+	/**
+	 * Checks to see if the playerNum has won
+	 * @param playerNum
+	 * @return true if the player has completed the game
+	 */
 	public boolean hasWon(int playerNum) {
 		Location currentPlayerLocation = getPlayerLocation(playerNum);
 		
@@ -182,6 +224,13 @@ public class QuoridorBoardModel {
 		}
 	}
 	
+	
+	
+	/**
+	 * 
+	 * @param playerNum
+	 * @return
+	 */
 	public int shortestPathToWin(int playerNum)
 	{
 		int smallestCost = Integer.MAX_VALUE;
@@ -216,7 +265,11 @@ public class QuoridorBoardModel {
 	}
 	
 	
-	
+	/**
+	 * Finds the winning row based off of what playerNum given
+	 * @param playerNum
+	 * @return
+	 */
 	public int winningRow(int playerNum)
 	{
 		if (playerNum == 1)
@@ -234,7 +287,14 @@ public class QuoridorBoardModel {
 	}
 	
 	
-	
+	// KEY METHOD WITHIN THE QUORIDORBOARDMODEL
+	/**
+	 * Checks to see what the shortest path is from a certain place to the playerNum given
+	 * @param first
+	 * @param second
+	 * @param playerNum
+	 * @return integer of the shortest path between the player and said space
+	 */
 	public int shortestPathToPlayer(int first, int second, int playerNum) {
 		
 		
@@ -246,10 +306,10 @@ public class QuoridorBoardModel {
 		
 		PriorityQueue<Location> pQueue= new PriorityQueue<Location>();
 		
-		
+		// Adds the current node with a cost of 0 to the PriorityQueue
 		pQueue.add(new Location(first, second, 0));
 		
-		
+		// Until the queue is empty
 		while(!(pQueue.isEmpty()))
 		{
 			
@@ -259,11 +319,13 @@ public class QuoridorBoardModel {
 			int addedCost = 1;
 			completionTable[currentLocation.first][currentLocation.second] = DONE;
 			
+			// If the dequeued item is the player, then return the cost (which is the lowest cost to the player)
 			if (currentLocation.first == playerLocation.first && currentLocation.second == playerLocation.second)
 			{
 				return currentLocation.cost;
 			}
-			
+			// If landing on the other player, don't increase the cost for adjacent
+			// Hopping feature
 			if (currentLocation.first == otherPlayerLocation.first && currentLocation.second == otherPlayerLocation.second)
 			{
 				addedCost = 0;
@@ -323,7 +385,11 @@ public class QuoridorBoardModel {
 		
 	}
 	
-	
+	/**
+	 * Ensures that the integer given is within the board
+	 * @param val
+	 * @return
+	 */
 	public boolean validBoardIndex(int val)
 	{
 		if (val >= 0)
@@ -353,7 +419,12 @@ public class QuoridorBoardModel {
 		}
 	}
 	
-	// TODO Change methods to check if valid player location
+	/**
+	 * Moves the player to the location given
+	 * @param first
+	 * @param second
+	 * @param playerNum
+	 */
 	private void setPlayerLocation(int first, int second, int playerNum)
 	{
 		Location playerLocation = getPlayerLocation(playerNum);
@@ -361,6 +432,7 @@ public class QuoridorBoardModel {
 		if (validBoardIndex(first) && validBoardIndex(second))
 		{
 			
+			// If the player doesn't have a Location object yet, create a blank one
 			if (getPlayerLocation(playerNum) == null && playerNum == 1)
 			{
 				player1Location = new Location(0,0,0);
@@ -370,7 +442,7 @@ public class QuoridorBoardModel {
 				player2Location = new Location(0,0,0);
 			}
 			
-			
+			// Ensure that the player's previous location is UNOCCUPIED
 			if (validBoardIndex(playerLocation.first) && validBoardIndex(playerLocation.second))
 			{
 				gameBoard[playerLocation.first][playerLocation.second] = UNOCCUPIED;
@@ -379,11 +451,12 @@ public class QuoridorBoardModel {
 			playerLocation.first = first;
 			playerLocation.second = second;
 			
+			// Move the player to the new location
 			if (playerNum == 1)
 			{
 				gameBoard[playerLocation.first][playerLocation.second] = OCCUPIED1;
 			}
-			else
+			else if (playerNum == 2)
 			{
 				gameBoard[playerLocation.first][playerLocation.second] = OCCUPIED2;
 			}
@@ -394,6 +467,12 @@ public class QuoridorBoardModel {
 		}
 	}
 	
+	/**
+	 * If 1, get 2
+	 * If 2, get 1
+	 * @param playerNum
+	 * @return
+	 */
 	public Location getOtherPlayerLocation(int playerNum)
 	{
 		if (playerNum == 1)
@@ -550,7 +629,11 @@ public class QuoridorBoardModel {
 	
 	
 	
-	
+	/**
+	 * Internal class that stores indices for a 2D array
+	 * and stores the cost
+	 * 
+	 */
 	private class Location implements Comparable<Location> {
 		
 		public int first;
