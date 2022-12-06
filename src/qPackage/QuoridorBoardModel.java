@@ -150,10 +150,14 @@ public class QuoridorBoardModel {
 		}
 		
 		
-		System.out.println("\nYou're shortest path was: " + shortestPathToPlayer(first, second, playerNum));
 		if (shortestPathToPlayer(first, second, playerNum) == 1)
 		{
 			setPlayerLocation(first, second, playerNum);
+			if (hasWon(playerNum))
+			{
+				pcs.firePropertyChange("winner", null, currentPlayer);
+				return;
+			}
 			nextTurn();
 		}
 		else
@@ -165,7 +169,18 @@ public class QuoridorBoardModel {
 		
 	}
 	
-	
+	public boolean hasWon(int playerNum) {
+		Location currentPlayerLocation = getPlayerLocation(playerNum);
+		
+		if(currentPlayerLocation.first == winningRow(playerNum))
+		{
+			return true;
+		}
+		else
+		{
+			return false;
+		}
+	}
 	
 	public int shortestPathToWin(int playerNum)
 	{
@@ -239,9 +254,6 @@ public class QuoridorBoardModel {
 		{
 			
 			Location currentLocation = pQueue.remove();
-			
-			System.out.println("\nCurrent Location:" + "\nfirst: " + currentLocation.first + "\nsecond: " + currentLocation.second + "\ncost: " + currentLocation.cost);
-			
 			
 			
 			int addedCost = 1;
@@ -591,9 +603,4 @@ public class QuoridorBoardModel {
 
 
 
-
-
-
-	
-	
 }

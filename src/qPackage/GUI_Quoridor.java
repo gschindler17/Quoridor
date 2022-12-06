@@ -120,8 +120,6 @@ public class GUI_Quoridor extends Application implements PropertyChangeListener,
 			for(int col = 0; col < gameBoard[0].length; col++)
 			{
 				
-				System.out.print(gameBoard[row][col] + ", ");
-				
 				if (boardLogic.isBarrier(row, col) && !(boardLogic.isNullBarrier(row, col)))
 				{
 					SmartButton temp = new SmartButton(row, col);
@@ -169,8 +167,6 @@ public class GUI_Quoridor extends Application implements PropertyChangeListener,
 				
 				
 			}
-			
-			System.out.println();
 		}
 		
 		root.add(gameboardPane, 1, 2);
@@ -221,6 +217,16 @@ public class GUI_Quoridor extends Application implements PropertyChangeListener,
 
 	
 	
+	public void showWinner() 
+	{
+		GridPane gPane = new GridPane();
+		Scene scene = new Scene(gPane, 600, 600);
+		Stage stage = new Stage();
+		stage.setScene(scene);
+		stage.setTitle("Cool Window"); 
+	}
+	
+	
 	
 	
 	
@@ -239,10 +245,15 @@ public void propertyChange(PropertyChangeEvent evt) {
 		}
 		if (evt.getPropertyName().equals("nextTurn"))
 		{
-			System.out.println("NEXT TURN\n\n");
 			gameboardPane.getChildren().clear();
 			this.updateGameBoard();
 			this.updateFeedback();
+		}
+		
+		if (evt.getPropertyName().equals("winner"))
+		{
+			this.updateGameBoard();
+			this.showWinner();
 		}
 		
 	}
