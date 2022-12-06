@@ -403,6 +403,11 @@ public class QuoridorBoardModel {
 	}
 	
 	
+	public int getBoardSize() {
+		return gameBoard.length;
+	}
+	
+	
 	public Location getPlayerLocation(int playerNum)
 	{
 		if (playerNum == 1)

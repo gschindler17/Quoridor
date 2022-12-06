@@ -53,10 +53,16 @@ public class GUI_Quoridor extends Application implements PropertyChangeListener,
 	 */
 	private Button resetButton;
 	
-	
+	/**
+	 * Displays the current turn
+	 */
 	private Label currentTurnLabel;
 	
 	
+	/**
+	 * Constructor
+	 * Creates the boardLogic
+	 */
 	public GUI_Quoridor() {
 		boardLogic = new QuoridorBoardModel();
 		
@@ -90,8 +96,6 @@ public class GUI_Quoridor extends Application implements PropertyChangeListener,
 			
 			updateGameBoard();
 			
-			
-			
 			root.add(setSizeCB, 0, 1);
 			root.add(currentTurnLabel, 1, 1);
 			root.add(resetButton, 0, 3);
@@ -108,20 +112,19 @@ public class GUI_Quoridor extends Application implements PropertyChangeListener,
 		
 	}
 	
-	
+	/**
+	 * Creates the game board and updates it based off of boardLogic
+	 */
 	public void updateGameBoard()
 	{
-		int[][] gameBoard = boardLogic.getGameBoard();
-		
-		
+			
 		gameboardPane = new GridPane();
 		
-		
-		for (int row = 0; row < gameBoard.length; row++)
+		for (int row = 0; row < boardLogic.getGameBoard().length; row++)
 		{
-			for(int col = 0; col < gameBoard[0].length; col++)
+			for(int col = 0; col < boardLogic.getGameBoard().length; col++)
 			{
-				
+				// If the location is a barrier, create barrier buttons
 				if (boardLogic.isBarrier(row, col) && !(boardLogic.isNullBarrier(row, col)))
 				{
 					SmartButton temp = new SmartButton(row, col);
@@ -147,6 +150,7 @@ public class GUI_Quoridor extends Application implements PropertyChangeListener,
 					gameboardPane.add(temp, col, row);
 				}
 				
+				// If location is a player square, create player button
 				else if (boardLogic.isPlayerSquare(row, col))
 				{
 					SmartButton temp = new SmartButton(row, col);
@@ -171,6 +175,7 @@ public class GUI_Quoridor extends Application implements PropertyChangeListener,
 			}
 		}
 		
+		// adds the gameboardPane back to the root so it can be displayed
 		root.add(gameboardPane, 1, 2);
 	}
 	
@@ -199,8 +204,6 @@ public class GUI_Quoridor extends Application implements PropertyChangeListener,
 			boardLogic.resetBoard();
 		}
 		
-		
-		
 		try {
 			if (event.getSource() instanceof SmartButton)
 			{
@@ -208,7 +211,9 @@ public class GUI_Quoridor extends Application implements PropertyChangeListener,
 				
 				boardLogic.completeMove(selectedButton.row, selectedButton.col);
 			}
-		}catch (Exception _exception) {
+		}
+		// If invalid move, will pop up an exception
+		catch (Exception _exception) {
 			Alert alert = new Alert(Alert.AlertType.ERROR);
     		alert.setTitle("Something doesn't look right...");
     		alert.setContentText(_exception.getMessage());
@@ -218,7 +223,9 @@ public class GUI_Quoridor extends Application implements PropertyChangeListener,
 	}
 
 	
-	
+	/**
+	 * Shows a box when there is a winner prompting to restart the game
+	 */
 	public void showWinner() 
 	{
 		Alert alert = new Alert(AlertType.NONE, "Player " + boardLogic.getCurrentPlayer() + " wins!\nPlay again?", ButtonType.YES);
@@ -240,7 +247,6 @@ public class GUI_Quoridor extends Application implements PropertyChangeListener,
 	
 public void propertyChange(PropertyChangeEvent evt) {
 		
-	
 		if (evt.getPropertyName().equals("setSize"))
 		{
 			gameboardPane.getChildren().clear();
