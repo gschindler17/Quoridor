@@ -89,11 +89,13 @@ public class QuoridorBoardModel {
 		// If there are n spaces, then there are n-1 barriers too
 		gameBoard = new int[(boardSize * 2) - 1][(boardSize * 2) - 1];
 		
-		
+		currentPlayer = 1;
 		
 		int middleCol = getMiddleCol();
 		
 		// Starts the players off in the middle of their respective row
+		clearPlayerLocations();
+	
 		setPlayerLocation((boardSize * 2) - 2, middleCol, 2);
 		setPlayerLocation(0, middleCol, 1);
 		
@@ -102,6 +104,16 @@ public class QuoridorBoardModel {
 		pcs.firePropertyChange("setSize", null, boardSize);
 	}
 	
+	private void clearPlayerLocations() {
+		player1Location = new Location(0,0,0);
+		player2Location = new Location(0,0,0);
+		
+	}
+
+
+
+
+
 	/**
 	 * Sets the board to its original state at the current size
 	 */
@@ -227,38 +239,122 @@ public class QuoridorBoardModel {
 	
 	
 	/**
-	 * 
+	 * Modified version of shortestPathToPlayer
+	 * Tracks the shortest costs of the winning row and returns the smallest value
+	 * If no path to end, return -1
 	 * @param playerNum
 	 * @return
 	 */
 	public int shortestPathToWin(int playerNum)
 	{
-		int smallestCost = Integer.MAX_VALUE;
+
+		Location playerLocation = getPlayerLocation(playerNum);
+		Location otherPlayerLocation = getOtherPlayerLocation(playerNum);
+		
+		int[][] completionTable = new int[gameBoard.length][gameBoard.length];
 		
 		
-		for (int col = 0; col < gameBoard[0].length; col = col + 2)
+		PriorityQueue<Location> pQueue= new PriorityQueue<Location>();
+		
+		// Adds the current node with a cost of 0 to the PriorityQueue
+		pQueue.add(new Location(playerLocation.first, playerLocation.second, 0));
+		
+		int[] storedCosts = new int[gameBoard.length];
+		
+		// Until the queue is empty
+		while(!(pQueue.isEmpty()))
 		{
-			int pathLength = shortestPathToPlayer(winningRow(playerNum), col, playerNum);
 			
-			if (pathLength == -1)
+			Location currentLocation = pQueue.remove();
+			
+			int addedCost = 1;
+			completionTable[currentLocation.first][currentLocation.second] = DONE;
+
+			
+			// If landing on the other player, don't increase the cost for adjacent
+			// Hopping feature
+			if (currentLocation.first == otherPlayerLocation.first && currentLocation.second == otherPlayerLocation.second)
 			{
-				continue;
+				addedCost = 0;
 			}
-			if (pathLength < smallestCost)
+			
+			if (currentLocation.first == winningRow(playerNum))
 			{
-				smallestCost = pathLength;
+				storedCosts[currentLocation.second] = currentLocation.cost;
+			}
+			
+			
+			// If not done, check if more steps possible in current path
+			// Because there are never barriers around the edge of the board, if +/- 1 is valid, then +/- 2 will also have valid index
+			// Checks left
+			if (validBoardIndex(currentLocation.second - 1) && gameBoard[currentLocation.first][currentLocation.second - 1] == PASSABLE)
+			{	
+				// If next not already dequeued
+				if(completionTable[currentLocation.first][currentLocation.second - 2] != DONE)
+				{
+					pQueue.add(new Location(currentLocation.first, currentLocation.second - 2, currentLocation.cost + addedCost));
+				}
+			}
+			
+			// Checks right
+			if (validBoardIndex(currentLocation.second + 1) && gameBoard[currentLocation.first][currentLocation.second + 1] == PASSABLE)
+			{
+				// If next not already dequeued
+				if(completionTable[currentLocation.first][currentLocation.second + 2] != DONE)
+				{
+					pQueue.add(new Location(currentLocation.first, currentLocation.second + 2, currentLocation.cost + addedCost));
+				}
+			}
+			
+			// Checks up
+			if (validBoardIndex(currentLocation.first - 1) && gameBoard[currentLocation.first - 1][currentLocation.second] == PASSABLE)
+			{
+				// If next not already dequeued
+				if(completionTable[currentLocation.first - 2][currentLocation.second] != DONE)
+				{
+					pQueue.add(new Location(currentLocation.first - 2, currentLocation.second, currentLocation.cost + addedCost));
+				}
+			}
+			
+			// Checks down
+			if (validBoardIndex(currentLocation.first + 1) && gameBoard[currentLocation.first + 1][currentLocation.second] == PASSABLE)
+			{
+				// If next not already dequeued
+				if(completionTable[currentLocation.first + 2][currentLocation.second] != DONE)
+				{
+					pQueue.add(new Location(currentLocation.first + 2, currentLocation.second, currentLocation.cost + addedCost));
+				}
+			}
+			
+			
+		} // End While Loop
+		
+		int minimumCost = Integer.MAX_VALUE;
+		
+		// The final row must have a nonzero cost, because they all cannot be where the player is
+		// If this is false, that means that the destination row has not been reached
+		boolean nonzeroCost = false;
+		
+		for(int index = 0; index < storedCosts.length; index++)
+		{
+			if(storedCosts[index] < minimumCost)
+			{
+				minimumCost = storedCosts[index];
+			}
+			if(storedCosts[index] > 0)
+			{
+				nonzeroCost = true;
 			}
 		}
 		
+		if (!(nonzeroCost))
+		{
+			minimumCost = -1;
+		}
 		
-		if (smallestCost == Integer.MAX_VALUE)
-		{
-			return -1;
-		}
-		else
-		{
-			return smallestCost;
-		}
+		
+		// If the final destination was never reached, return -1
+		return minimumCost;
 		
 		
 		
@@ -432,7 +528,7 @@ public class QuoridorBoardModel {
 	 */
 	private void setPlayerLocation(int first, int second, int playerNum)
 	{
-		Location playerLocation = getPlayerLocation(playerNum);
+		
 		
 		if (validBoardIndex(first) && validBoardIndex(second))
 		{
@@ -446,6 +542,9 @@ public class QuoridorBoardModel {
 			{
 				player2Location = new Location(0,0,0);
 			}
+			
+			Location playerLocation = getPlayerLocation(playerNum);
+			
 			
 			// Ensure that the player's previous location is UNOCCUPIED
 			if (validBoardIndex(playerLocation.first) && validBoardIndex(playerLocation.second))

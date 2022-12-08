@@ -253,6 +253,7 @@ public void propertyChange(PropertyChangeEvent evt) {
 		{
 			gameboardPane.getChildren().clear();
 			this.updateGameBoard();
+			this.updateFeedback();
 		}
 		if (evt.getPropertyName().equals("nextTurn"))
 		{
